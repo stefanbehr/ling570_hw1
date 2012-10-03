@@ -1,8 +1,48 @@
 #!/usr/bin/env python
 
 import sys
+import re
 
-for i in xrange(len(sys.argv)):
-    print sys.argv[i], i
+# read in stdin
+lines = sys.stdin.read().strip().split('\n')
 
-print len(sys.stdin.read().split('\n'))
+def split_punc(s, patt):
+    """Given a string, splits string into list of punctuation, specified
+by regex pattern patt, and all other parts, in original order."""
+    result = []
+    match = patt.search(s)
+    if match:
+        punc = match.group()
+        punc_i = s.index(punc) 
+        result.extend([s[:punc_i], punc])
+        result.extend(split_punc(s[punc_i+len(punc):], patt))
+    else:
+        result.append(s)
+    return [x for x in result if x] # filter empty strings
+
+# regex patterns
+CONTRACS = re.compile(r"(^\w+)(n't|'(?:d|re|s))") # contraction pattern
+ABBREVS = re.compile(r"[A-Z][a-z]?\.(?:[A-Z][a-z]?\.)*") # abbreviation pattern
+PUNC = re.compile(r"""``|''|[?\|!\-":]""") # all anticipated punctuation except comma and period
+PERIOD = re.compile(r"(\.)(?!\d)") # period not preceding a digit, to avoid splitting decimals; also splits off elipsis
+COMMA = re.compile(r"(,)(?!\d)") # comma not preceding a digit, to avoid splitting numbers >= 1,000
+
+# iterate through input lines and output tokenized lines
+for line in lines:
+    chunks = line.split()
+    result = []
+
+    # iterate through whitespace-separated chunks in line
+    for chunk in chunks:
+        chunk = CONTRACS.sub(r"\1 \2", chunk) # insert spaces between contraction morphemes
+        chunk = ' '.join(split_punc(chunk, PUNC))
+        chunk = COMMA.sub(r" \1", chunk)
+        abbrev_match = ABBREVS.search(chunk) # check for abbreviation; if present, don't split off periods
+        if abbrev_match:
+            result.append(chunk)
+            continue
+        else:
+            chunk = PERIOD.sub(r" \1", chunk)
+        result.append(chunk)
+
+    print ' '.join(result)
