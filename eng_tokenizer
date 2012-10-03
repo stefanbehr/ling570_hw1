@@ -3,4 +3,4 @@
 import sys
 
 for i in xrange(len(sys.argv)):
-    print argv[i], i
+    print sys.argv[i], i
