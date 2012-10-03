@@ -1,0 +1,32 @@
+Stefan Behr
+LING 570
+Homework 1
+Note file
+10/02
+
+**************************************
+#1a, Question 2: Algorithm Description
+**************************************
+
+My tokenizer splits the input from stdin on newlines, and then iterates over the resulting list of lines, which are strings. For each line, the tokenizer first modifies phone numbers of a certain form so that they don't later get split apart when I split each line on whitespace. Next, the line under consideration is split on whitespace, and the resulting list of whitespace-free chunks is iterated over. For each chunk, URLs are first searched for. If one is found, the chunk is added to a growing result list for the line, and the next chunk is considered, without further processing the chunk containing the URL. If no URL is found, however, we continue processing the current chunk. Contractions are found and split ("can't" -> "ca n't", etc.). Punctuation is split off from its surrounding substrings, with the exception of commas and periods, which are processed later. Then, commas which don't precede a digit are split off into tokens as well (this preserves numbers like "1,000"). Next, abbreviations are detected with a regex, and, if a chunk contains an abbreviation, it is immediately added to the output, bypassing the period code to avoid splitting the abbreviation. Finally, periods are split off into tokens, since we're no longer in danger of messing up URLs, abbreviations, etc. After all these processing steps are done for any chunk, that chunk is added to a result list of chunks.
+
+After the tokenizer processes the last chunk in a line, the result list contains is joined on spaces, phone numbers are restored to their original form, and the resulting line is printed.
+
+The tokenizer does not use external resources.
+
+Below are further details about the handling of various strings:
+
+Phone numbers: These are handled in a rather primitive way by searching each line of the input using a US-centric regex pattern (e.g., (555) 555-5555). Each such phone number found is then modified to replace its whitespace with a hyphen, which will guard against splitting up such phone numbers into multiple chunks (since each line is split on whitespace for processing chunks void of whitespace). The initial modification of phone numbers is reversed right before outputting each tokenized line of the input, so that the numbers retain their initial forms.
+
+I could improve this part of the tokenizer by accounting for a greater number of forms of phone number, probably by writing more permissive regexes.
+
+URLs: These are handled with a regex pattern that expects a URL (or URL-like pattern) to optionally begin with a protocol name followed by a colon and two forward slashes, followed by at least one alphanumeric character, a period, and at least one more alphanumeric character, with possible repetition of pairs of periods and strings of alphanumeric characters (e.g., (http(s)://)www.apple.com). I think the pattern does a good job of handling a number of different internet protocol specifiers, as well as URLs without such specifiers. The handling of URLs is lacking in that, due to the various troublesome punctuation marks allowed in URLs, URLs are processed before any punctuation processing is done, and added to the output immediately after detection. This means that any punctuation surrounding URLs which isn't part of the URL remains attached to the URL in the output (e.g, "Do you like apple.com?" instead of "Do you like apple.com ?"). I could write more complex regexes to handle this.
+
+Punctuation: Punctuation, namely ``, '', ?, |, !, ", and :, is split off into distinct tokens. This is done using a regex and function I wrote that will convert a string containing punctuation into a list of the punctuation and other substrings in the string in the order in which they appear. Commas are handled in such a way as to not split numbers like 1,000 into multiple tokens, while ensuring that something like "hello," gets split into two tokens. Periods are handled in the same way as commas in order to ensure the integrity of fractional decimal numbers while also splitting off true periods. However, abbreviations are handled before periods, and the period-handling code is bypassed if an abbreviation is detected, so that abbreviations aren't split from their periods. Because
+
+I think punctuation is handled rather well overall, but, again the way it's handled causes problems for URLs.
+
+Abbreviations: These are detected using a regex which looks for and uppercase letter, followed by an optional lowercase letter (think "Ph.D."), followed by a period, with the entire pattern repeated one or more times. This probably doesn't capture all abbreviations, but I think it does a good job to begin with. I could improve it by studying more abbreviation patterns and modifying my regex accordingly. An external file of common abbreviations could be useful too.
+
+Hyphenated words: These are treated as single tokens, and aren't split. As such, hyphens everywhere are treated as parts of larger tokens (unless they're already surrounded by whitespace in the input file). This means that something like a date range "1999-2000" isn't split into three tokens, as I believe it should. I could correct this by writing a regex that distinguish between hyphens surrounded by alphabetical characters and those surrounded by digits.
+

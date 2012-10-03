@@ -21,19 +21,28 @@ by regex pattern patt, and all other parts, in original order."""
     return [x for x in result if x] # filter empty strings
 
 # regex patterns
+URL = re.compile(r"(?:(?:https?|ftp|smtp|git)://)?\w+(?:\.\w+)+")
+PHONE = re.compile(r"(\(\d{3}\)) (\d{3}\-\d{4})") # US-centric phone number pattern
+PHONE_REV = re.compile(r"(\(\d{3}\))\-(\d{3}\-\d{4})") # US-centric phone number pattern for reversing future changes
 CONTRACS = re.compile(r"(^\w+)(n't|'(?:d|re|s))") # contraction pattern
 ABBREVS = re.compile(r"[A-Z][a-z]?\.(?:[A-Z][a-z]?\.)*") # abbreviation pattern
-PUNC = re.compile(r"""``|''|[?\|!\-":]""") # all anticipated punctuation except comma and period
+PUNC = re.compile(r"""``|''|[?\|!":]""") # all anticipated punctuation except comma and period
 PERIOD = re.compile(r"(\.)(?!\d)") # period not preceding a digit, to avoid splitting decimals; also splits off elipsis
 COMMA = re.compile(r"(,)(?!\d)") # comma not preceding a digit, to avoid splitting numbers >= 1,000
 
 # iterate through input lines and output tokenized lines
 for line in lines:
+    line = PHONE.sub(r"\1-\2", line) # ensure phone numbers don't split on whitespace
+
     chunks = line.split()
     result = []
 
     # iterate through whitespace-separated chunks in line
     for chunk in chunks:
+        url_match = URL.search(chunk)
+        if url_match:
+            result.append(chunk)
+            continue
         chunk = CONTRACS.sub(r"\1 \2", chunk) # insert spaces between contraction morphemes
         chunk = ' '.join(split_punc(chunk, PUNC))
         chunk = COMMA.sub(r" \1", chunk)
@@ -41,8 +50,9 @@ for line in lines:
         if abbrev_match:
             result.append(chunk)
             continue
-        else:
-            chunk = PERIOD.sub(r" \1", chunk)
+        chunk = PERIOD.sub(r" \1", chunk)
         result.append(chunk)
 
-    print ' '.join(result)
+    line = ' '.join(result)
+    line = PHONE_REV.sub(r"\1 \2", line) # return phone numbers to normal
+    print line
