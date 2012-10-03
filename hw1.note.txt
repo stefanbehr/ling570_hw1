@@ -30,3 +30,12 @@ Abbreviations: These are detected using a regex which looks for and uppercase le
 
 Hyphenated words: These are treated as single tokens, and aren't split. As such, hyphens everywhere are treated as parts of larger tokens (unless they're already surrounded by whitespace in the input file). This means that something like a date range "1999-2000" isn't split into three tokens, as I believe it should. I could correct this by writing a regex that distinguish between hyphens surrounded by alphabetical characters and those surrounded by digits.
 
+*************************************************
+#1a, Question 4: Tokenization and Vocabulary Size
+*************************************************
+
+Number of tokens in test1: 919
+Number of tokens in test1: 1067
+
+Size of test1.voc: 477 lines (token-frequency pairs) long
+Size of test1.tok.voc: 444 lines (token-frequency pairs) long

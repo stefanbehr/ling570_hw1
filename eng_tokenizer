@@ -24,7 +24,7 @@ by regex pattern patt, and all other parts, in original order."""
 URL = re.compile(r"(?:(?:https?|ftp|smtp|git)://)?\w+(?:\.\w+)+")
 PHONE = re.compile(r"(\(\d{3}\)) (\d{3}\-\d{4})") # US-centric phone number pattern
 PHONE_REV = re.compile(r"(\(\d{3}\))\-(\d{3}\-\d{4})") # US-centric phone number pattern for reversing future changes
-CONTRACS = re.compile(r"(^\w+)(n't|'(?:d|re|s))") # contraction pattern
+CONTRACS = re.compile(r"(^\w+)(n't|'(?:d|re|s|m))") # contraction pattern
 ABBREVS = re.compile(r"[A-Z][a-z]?\.(?:[A-Z][a-z]?\.)*") # abbreviation pattern
 PUNC = re.compile(r"""``|''|[?\|!":]""") # all anticipated punctuation except comma and period
 PERIOD = re.compile(r"(\.)(?!\d)") # period not preceding a digit, to avoid splitting decimals; also splits off elipsis
