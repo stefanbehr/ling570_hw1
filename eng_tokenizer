@@ -4,3 +4,5 @@ import sys
 
 for i in xrange(len(sys.argv)):
     print sys.argv[i], i
+
+print len(sys.stdin.read().split('\n'))
